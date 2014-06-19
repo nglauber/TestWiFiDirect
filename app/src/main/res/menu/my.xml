@@ -1,0 +1,10 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".MyActivity" >
+    <item android:id="@+id/action_discover_peers"
+        android:title="Discover peers"
+        android:showAsAction="never" />
+    <item android:id="@+id/action_connect"
+        android:title="Connect"
+        android:showAsAction="never" />
+</menu>
