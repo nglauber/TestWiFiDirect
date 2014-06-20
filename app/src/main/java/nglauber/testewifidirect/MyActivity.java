@@ -22,6 +22,7 @@ public class MyActivity extends Activity
         implements  WifiP2pManager.PeerListListener,
                     WifiP2pManager.ConnectionInfoListener {
 
+    public static final String TAG = "NGVL";
     IntentFilter mIntentFilter;
     WifiP2pManager mManager;
     WifiP2pManager.Channel mChannel;
@@ -108,45 +109,45 @@ public class MyActivity extends Activity
         it.putExtra(ChatService.EXTRA_MESSAGE, message);
         startService(it);
 
-        mMessages.add("me: " + message);
+        mMessages.add(getString(R.string.me_message, message));
         mMessagesAdapter.notifyDataSetChanged();
     }
 
     /// INTERFACE WifiP2pManager.PeerListListener
     @Override
     public void onPeersAvailable(WifiP2pDeviceList peerList) {
-        Log.d("NGVL", "onPeersAvailable");
+        Log.d(TAG, "onPeersAvailable");
         // Out with the old, in with the new.
         mPeers.clear();
         mPeers.addAll(peerList.getDeviceList());
         mDevicesAdapter.notifyDataSetChanged();
 
-        Log.d("NGVL", "----------------------------------");
+        Log.d(TAG, "----------------------------------");
         for (WifiP2pDevice device : mPeers){
-            Log.d("NGVL", "Device found: "+ device.deviceName +" ("+ device.deviceAddress +")");
+            Log.d(TAG, "Device found: "+ device.deviceName +" ("+ device.deviceAddress +")");
         }
 
         if (mPeers.size() == 0) {
-            Log.d("NGVL", "No devices found");
-            showMessage(R.string.msg_no_devices_found);
+            Log.d(TAG, "No devices found");
+            showToast(R.string.msg_no_devices_found);
         }
     }
 
     //  INTERFACE WifiP2pManager.ConnectionInfoListener
     @Override
     public void onConnectionInfoAvailable(WifiP2pInfo wifiP2pInfo) {
-        Log.d("NGVL", "onConnectionInfoAvailable");
+        Log.d(TAG, "onConnectionInfoAvailable");
         // InetAddress from WifiP2pInfo struct.
         String groupOwnerAddress = wifiP2pInfo.groupOwnerAddress.getHostAddress();
-        Log.d("NGVL", "address: " + groupOwnerAddress);
+        Log.d(TAG, "address: " + groupOwnerAddress);
 
-        showMessage(R.string.msg_connection_available);
+        showToast(R.string.msg_connection_available);
         // After the group negotiation, we can determine the group owner.
         if (wifiP2pInfo.groupFormed && wifiP2pInfo.isGroupOwner) {
             // Do whatever tasks are specific to the group owner.
             // One common case is creating a server thread and accepting
             // incoming connections.
-            Log.d("NGVL", "I AM THE OWNER");
+            Log.d(TAG, "I AM THE OWNER");
             Intent it = new Intent(this, ChatService.class);
             it.putExtra(ChatService.EXTRA_SERVER_CLIENT, ChatService.TYPE_SERVER);
             startService(it);
@@ -155,7 +156,7 @@ public class MyActivity extends Activity
             // The other device acts as the client. In this case,
             // you'll want to create a client thread that connects to the group
             // owner.
-            Log.d("NGVL", "I AM ON THE GROUP");
+            Log.d(TAG, "I AM ON THE GROUP");
             Intent it = new Intent(this, ChatService.class);
             it.putExtra(ChatService.EXTRA_SERVER_CLIENT, ChatService.TYPE_CLIENT);
             it.putExtra(ChatService.EXTRA_IP_ADDRESS, groupOwnerAddress);
@@ -169,22 +170,22 @@ public class MyActivity extends Activity
 
             @Override
             public void onSuccess() {
-                Log.d("NGVL", "discoverPeers::onSuccess");
+                Log.d(TAG, "discoverPeers::onSuccess");
             }
 
             @Override
             public void onFailure(int reasonCode) {
-                Log.d("NGVL", "discoverPeers::onFailure = " + reasonCode);
-                showMessage(R.string.msg_fail_to_find_devices);
+                Log.d(TAG, "discoverPeers::onFailure = " + reasonCode);
+                showToast(R.string.msg_fail_to_find_devices);
                 switch (reasonCode) {
                     case WifiP2pManager.BUSY:
-                        Log.d("NGVL", "BUSY = " + reasonCode);
+                        Log.d(TAG, "BUSY = " + reasonCode);
                         break;
                     case WifiP2pManager.P2P_UNSUPPORTED:
-                        Log.d("NGVL", "UNSUPPORTED = " + reasonCode);
+                        Log.d(TAG, "UNSUPPORTED = " + reasonCode);
                         break;
                     case WifiP2pManager.ERROR:
-                        Log.d("NGVL", "ERROR = " + reasonCode);
+                        Log.d(TAG, "ERROR = " + reasonCode);
                         break;
                 }
             }
@@ -201,8 +202,8 @@ public class MyActivity extends Activity
             @Override
             public void onSuccess() {
                 // WiFiDirectBroadcastReceiver will notify us. Ignore for now.
-                Log.d("NGVL", "connect::onSuccess");
-                showMessage(R.string.msg_connecting);
+                Log.d(TAG, "connect::onSuccess");
+                showToast(R.string.msg_connecting);
 
                 mMessages.clear();
                 mMessagesAdapter.notifyDataSetChanged();
@@ -210,14 +211,14 @@ public class MyActivity extends Activity
 
             @Override
             public void onFailure(int reason) {
-                Log.d("NGVL", "connect::onFailure");
-                showMessage(R.string.msg_fail_connect);
+                Log.d(TAG, "connect::onFailure");
+                showToast(R.string.msg_fail_connect);
             }
         });
     }
 
     private void disconnect() {
-        Log.d("NGVL", "disconnect");
+        Log.d(TAG, "disconnect");
         if (mManager != null && mChannel != null) {
             mManager.requestGroupInfo(mChannel, new WifiP2pManager.GroupInfoListener() {
                 @Override
@@ -228,13 +229,13 @@ public class MyActivity extends Activity
 
                             @Override
                             public void onSuccess() {
-                                Log.d("NGVL", "disconnect::removeGroup=onSuccess");
+                                Log.d(TAG, "disconnect::removeGroup=onSuccess");
 
                             }
 
                             @Override
                             public void onFailure(int reason) {
-                                Log.d("NGVL", "disconnect::removeGroup=onFailure -> " + reason);
+                                Log.d(TAG, "disconnect::removeGroup=onFailure -> " + reason);
                             }
                         });
                     }
@@ -256,7 +257,7 @@ public class MyActivity extends Activity
 
     }
 
-    private void showMessage(int m){
+    private void showToast(int m){
         Toast.makeText(this, m, Toast.LENGTH_SHORT).show();
     }
 
@@ -264,7 +265,7 @@ public class MyActivity extends Activity
     class MessageReceived extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            mMessages.add("remote: " + intent.getStringExtra(ChatService.EXTRA_MESSAGE));
+            mMessages.add(getString(R.string.remote_message, intent.getStringExtra(ChatService.EXTRA_MESSAGE)));
             mMessagesAdapter.notifyDataSetChanged();
         }
     }

@@ -11,7 +11,7 @@ import android.widget.Toast;
 
 public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
 
-    public static final String MINHA_TAG = "NGVL";
+    public static final String TAG = "NGVL";
 
     private WifiP2pManager mManager;
     private WifiP2pManager.Channel mChannel;
@@ -37,34 +37,34 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
         String action = intent.getAction();
 
         if (WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION.equals(action)) {
-            Log.d(MINHA_TAG, "onReceive::WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION");
+            Log.d(TAG, "onReceive::WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION");
             // Check to see if Wi-Fi is enabled and notify appropriate activity
             int state = intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, -1);
             if (state == WifiP2pManager.WIFI_P2P_STATE_ENABLED) {
                 // Wifi P2P is enabled
-                Log.d(MINHA_TAG, "Wifi P2P is enabled");
+                Log.d(TAG, "Wifi P2P is enabled");
             } else {
                 // Wi-Fi P2P is not enabled
-                Log.e(MINHA_TAG, "Wifi P2P is not enabled");
+                Log.e(TAG, "Wifi P2P is not enabled");
             }
 
         } else if (WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)) {
-            Log.d(MINHA_TAG, "onReceive::WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION");
+            Log.d(TAG, "onReceive::WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION");
             if (mManager != null) {
                 mManager.requestPeers(mChannel, mPeerListListener);
             }
 
         } else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)) {
             // Respond to new connection or disconnections
-            Log.d(MINHA_TAG, "onReceive::WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION");
+            Log.d(TAG, "onReceive::WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION");
             if (mManager == null) {
                 return;
             }
 
             NetworkInfo networkInfo = (NetworkInfo)intent.getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
-            Log.d(MINHA_TAG, "networkInfo: "+ networkInfo);
+            Log.d(TAG, "networkInfo: "+ networkInfo);
             if (networkInfo.isConnected()) {
-                Log.d(MINHA_TAG, "CONNECTED!!!");
+                Log.d(TAG, "CONNECTED!!!");
                 // We are connected with the other device, request connection
                 // info to find group owner IP
                 mManager.requestConnectionInfo(mChannel, mConnectionListener);
@@ -76,10 +76,10 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
 
         } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
             // Respond to this device's wifi state changing
-            Log.d(MINHA_TAG, "onReceive::WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION");
+            Log.d(TAG, "onReceive::WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION");
             WifiP2pDevice thisDevice = (WifiP2pDevice) intent.getParcelableExtra(
                     WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
-            Log.d(MINHA_TAG, "THIS DEVICE IS: "+ thisDevice);
+            Log.d(TAG, "THIS DEVICE IS: "+ thisDevice);
         }
     }
 

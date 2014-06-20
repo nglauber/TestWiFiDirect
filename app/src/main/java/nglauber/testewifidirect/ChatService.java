@@ -11,7 +11,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class ChatService extends Service {
-    boolean isRunning;
+    public static final String TAG = "NGVL";
 
     public static final String ACTION_MESSAGE_RECEIVED = "action_message_received";
     public static final String EXTRA_SERVER_CLIENT = "server_or_client";
@@ -20,8 +20,10 @@ public class ChatService extends Service {
     public static final int TYPE_SERVER = 1;
     public static final int TYPE_CLIENT = 2;
     private static final int PORT = 8888;
-    private int type;
 
+    private int type;
+    boolean isRunning;
+    
     private InputStream readStream;
     private OutputStream writeStream;
     private Socket mSocket;
@@ -36,37 +38,37 @@ public class ChatService extends Service {
 
     @Override
     public void onDestroy() {
-        Log.d("NGVL", "onDestroy");
+        Log.d(TAG, "onDestroy");
         isRunning = false;
         super.onDestroy();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d("NGVL", "onStartCommand");
+        Log.d(TAG, "onStartCommand");
         if (intent != null) {
             if (!isRunning) {
-                Log.d("NGVL", "NOT RUNNING. Starting...");
+                Log.d(TAG, "NOT RUNNING. Starting...");
                 type = intent.getIntExtra(EXTRA_SERVER_CLIENT, TYPE_CLIENT);
                 final String ipAddress = intent.getStringExtra(EXTRA_IP_ADDRESS);
 
                 new Thread() {
                     @Override
                     public void run() {
-                        Log.d("NGVL", "init connection thread");
+                        Log.d(TAG, "init connection thread");
                         isRunning = true;
                         try {
                             if (type == TYPE_SERVER) {
-                                Log.d("NGVL", "start server socket");
+                                Log.d(TAG, "start server socket");
                                 ServerSocket serverSocketSocket = new ServerSocket(PORT);
                                 mSocket = serverSocketSocket.accept();
-                                Log.d("NGVL", "client accepted");
+                                Log.d(TAG, "client accepted");
 
                             } else {
-                                Log.d("NGVL", "connecting to server");
+                                Log.d(TAG, "connecting to server");
                                 mSocket = new Socket();
                                 mSocket.connect(new InetSocketAddress(ipAddress, PORT), 500);
-                                Log.d("NGVL", "connected to server");
+                                Log.d(TAG, "connected to server");
                             }
                             readStream = mSocket.getInputStream();
                             writeStream = mSocket.getOutputStream();
@@ -75,9 +77,9 @@ public class ChatService extends Service {
 
                             DataInputStream dis = new DataInputStream(readStream);
                             while (isRunning) {
-                                Log.d("NGVL", "waiting for mMessages...");
+                                Log.d(TAG, "waiting for mMessages...");
                                 String s = dis.readUTF();
-                                Log.d("NGVL", "message received: " + s);
+                                Log.d(TAG, "message received: " + s);
                                 sendMessageBroadcast(s);
                             }
 
@@ -87,7 +89,7 @@ public class ChatService extends Service {
 
                             disconnect();
                         }
-                        Log.d("NGVL", "Thread stopped! Disconnected.");
+                        Log.d(TAG, "Thread stopped! Disconnected.");
                     }
                 }.start();
             } else {
@@ -99,7 +101,7 @@ public class ChatService extends Service {
                             super.run();
                             DataOutputStream dos = new DataOutputStream(writeStream);
                             try {
-                                Log.d("NGVL", "sending message: " + message);
+                                Log.d(TAG, "sending message: " + message);
                                 dos.writeUTF(message);
                             } catch (IOException e) {
                                 e.printStackTrace();
