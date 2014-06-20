@@ -22,4 +22,7 @@ A mesma deverá aparecer no outro dispositivo.
 
 Aparelhos
 =========
-Eu testeu esse exemplo com os seguintes aparelhos: Motorola Moto G, Samsung Galaxy S 4 e LG Nexus 4.
+Eu testei esse exemplo com os seguintes aparelhos: 
+Motorola Moto G, 
+Samsung Galaxy S 4 e 
+LG Nexus 4.
