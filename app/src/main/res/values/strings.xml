@@ -2,7 +2,18 @@
 <resources>
 
     <string name="app_name">TesteWiFiDirect</string>
-    <string name="hello_world">Hello world!</string>
-    <string name="action_settings">Settings</string>
+    <string name="devices_found">Devices found</string>
+    <string name="messages">Messages</string>
+    <string name="send">Send</string>
+    <string name="type_message">Type a message</string>
 
+    <string name="action_discover_peers">Discover peers</string>
+    <string name="action_connect">Connect</string>
+
+    <string name="msg_connecting">Connecting...</string>
+    <string name="msg_connected">Connected!!!</string>
+    <string name="msg_fail_connect">Failed to connect. Try again later.</string>
+    <string name="msg_no_devices_found">No devices found.</string>
+    <string name="msg_connection_available">Connection available</string>
+    <string name="msg_fail_to_find_devices">Fail to start search devices.</string>
 </resources>

@@ -2,9 +2,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".MyActivity" >
     <item android:id="@+id/action_discover_peers"
-        android:title="Discover peers"
+        android:title="@string/action_discover_peers"
         android:showAsAction="never" />
     <item android:id="@+id/action_connect"
-        android:title="Connect"
+        android:title="@string/action_connect"
         android:showAsAction="never" />
 </menu>

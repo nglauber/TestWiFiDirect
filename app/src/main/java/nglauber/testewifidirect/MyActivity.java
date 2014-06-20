@@ -12,10 +12,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.Spinner;
+import android.widget.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,32 +27,24 @@ public class MyActivity extends Activity
     WifiP2pManager.Channel mChannel;
     BroadcastReceiver mReceiver;
 
+    IntentFilter mMessageFilter;
+    MessageReceived messageReceived;
+
     List<WifiP2pDevice> mPeers = new ArrayList<WifiP2pDevice>();
     Spinner spnDevices;
     ArrayAdapter<WifiP2pDevice> mDevicesAdapter;
 
-    IntentFilter mMessageFilter;
     ArrayAdapter<String> mMessagesAdapter;
-    List<String> messages = new ArrayList<String>();
-    ListView listView;
-    EditText edtMessage;
-
-    MessageReceived messageReceived;
+    List<String> mMessages = new ArrayList<String>();
+    ListView mLstMessages;
+    EditText mEdtMessage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my);
 
-        mDevicesAdapter = new ArrayAdapter<WifiP2pDevice>(this, android.R.layout.simple_spinner_item, mPeers);
-        mDevicesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spnDevices = (Spinner)findViewById(R.id.spinner);
-        spnDevices.setAdapter(mDevicesAdapter);
-
-        edtMessage = (EditText)findViewById(R.id.editText);
-        mMessagesAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, messages);
-        listView = (ListView)findViewById(R.id.listView);
-        listView.setAdapter(mMessagesAdapter);
+        initUI();
 
         mMessageFilter = new IntentFilter();
         mMessageFilter.addAction(ChatService.ACTION_MESSAGE_RECEIVED);
@@ -74,9 +63,10 @@ public class MyActivity extends Activity
     protected void onResume() {
         super.onResume();
         messageReceived = new MessageReceived();
+        registerReceiver(messageReceived, mMessageFilter);
+
         mReceiver = new WiFiDirectBroadcastReceiver(mManager, mChannel, this, this);
         registerReceiver(mReceiver, mIntentFilter);
-        registerReceiver(messageReceived, mMessageFilter);
     }
 
     @Override
@@ -84,11 +74,6 @@ public class MyActivity extends Activity
         super.onPause();
         unregisterReceiver(mReceiver);
         unregisterReceiver(messageReceived);
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
         disconnect();
     }
 
@@ -113,12 +98,14 @@ public class MyActivity extends Activity
     }
 
     public void sendMessage(View v){
-        String message = edtMessage.getText().toString();
+        String message = mEdtMessage.getText().toString();
+        mEdtMessage.getText().clear();
+
         Intent it = new Intent(this, ChatService.class);
         it.putExtra(ChatService.EXTRA_MESSAGE, message);
         startService(it);
 
-        messages.add("me: "+ message);
+        mMessages.add("me: " + message);
         mMessagesAdapter.notifyDataSetChanged();
     }
 
@@ -138,6 +125,7 @@ public class MyActivity extends Activity
 
         if (mPeers.size() == 0) {
             Log.d("NGVL", "No devices found");
+            showMessage(R.string.msg_no_devices_found);
         }
     }
 
@@ -147,8 +135,9 @@ public class MyActivity extends Activity
         Log.d("NGVL", "onConnectionInfoAvailable");
         // InetAddress from WifiP2pInfo struct.
         String groupOwnerAddress = wifiP2pInfo.groupOwnerAddress.getHostAddress();
-        Log.d("NGVL", "address: "+ groupOwnerAddress);
+        Log.d("NGVL", "address: " + groupOwnerAddress);
 
+        showMessage(R.string.msg_connection_available);
         // After the group negotiation, we can determine the group owner.
         if (wifiP2pInfo.groupFormed && wifiP2pInfo.isGroupOwner) {
             // Do whatever tasks are specific to the group owner.
@@ -171,7 +160,7 @@ public class MyActivity extends Activity
         }
     }
 
-    /// METODOS PRIVADOS
+    /// PRIVATE METHODS
     private void discoverPeers(){
         mManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
 
@@ -182,16 +171,17 @@ public class MyActivity extends Activity
 
             @Override
             public void onFailure(int reasonCode) {
-                Log.d("NGVL", "discoverPeers::onFailure = "+ reasonCode);
-                switch (reasonCode){
+                Log.d("NGVL", "discoverPeers::onFailure = " + reasonCode);
+                showMessage(R.string.msg_fail_to_find_devices);
+                switch (reasonCode) {
                     case WifiP2pManager.BUSY:
-                        Log.d("NGVL", "BUSY = "+ reasonCode);
+                        Log.d("NGVL", "BUSY = " + reasonCode);
                         break;
                     case WifiP2pManager.P2P_UNSUPPORTED:
-                        Log.d("NGVL", "UNSUPPORTED = "+ reasonCode);
+                        Log.d("NGVL", "UNSUPPORTED = " + reasonCode);
                         break;
                     case WifiP2pManager.ERROR:
-                        Log.d("NGVL", "ERROR = "+ reasonCode);
+                        Log.d("NGVL", "ERROR = " + reasonCode);
                         break;
                 }
             }
@@ -209,11 +199,13 @@ public class MyActivity extends Activity
             public void onSuccess() {
                 // WiFiDirectBroadcastReceiver will notify us. Ignore for now.
                 Log.d("NGVL", "connect::onSuccess");
+                showMessage(R.string.msg_connecting);
             }
 
             @Override
             public void onFailure(int reason) {
                 Log.d("NGVL", "connect::onFailure");
+                showMessage(R.string.msg_fail_connect);
             }
         });
     }
@@ -231,6 +223,7 @@ public class MyActivity extends Activity
                             @Override
                             public void onSuccess() {
                                 Log.d("NGVL", "disconnect::removeGroup=onSuccess");
+
                             }
 
                             @Override
@@ -244,11 +237,28 @@ public class MyActivity extends Activity
         }
     }
 
-    // Briadcast that receive messages sent by remote device
+    private void initUI(){
+        mDevicesAdapter = new ArrayAdapter<WifiP2pDevice>(this, android.R.layout.simple_spinner_item, mPeers);
+        mDevicesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spnDevices = (Spinner)findViewById(R.id.spinner);
+        spnDevices.setAdapter(mDevicesAdapter);
+
+        mEdtMessage = (EditText)findViewById(R.id.editText);
+        mMessagesAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, mMessages);
+        mLstMessages = (ListView)findViewById(R.id.listView);
+        mLstMessages.setAdapter(mMessagesAdapter);
+
+    }
+
+    private void showMessage(int m){
+        Toast.makeText(this, m, Toast.LENGTH_SHORT).show();
+    }
+
+    // Broadcast that receives mMessages sent by remote device
     class MessageReceived extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            messages.add("remote: "+ intent.getStringExtra(ChatService.EXTRA_MESSAGE));
+            mMessages.add("remote: " + intent.getStringExtra(ChatService.EXTRA_MESSAGE));
             mMessagesAdapter.notifyDataSetChanged();
         }
     }
