@@ -92,6 +92,9 @@ public class MyActivity extends Activity
             case R.id.action_discover_peers:
                 discoverPeers();
                 break;
+            case R.id.action_disconnect:
+                disconnect();
+                break;
         }
 
         return super.onOptionsItemSelected(item);
@@ -200,6 +203,9 @@ public class MyActivity extends Activity
                 // WiFiDirectBroadcastReceiver will notify us. Ignore for now.
                 Log.d("NGVL", "connect::onSuccess");
                 showMessage(R.string.msg_connecting);
+
+                mMessages.clear();
+                mMessagesAdapter.notifyDataSetChanged();
             }
 
             @Override

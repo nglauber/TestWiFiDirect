@@ -7,4 +7,8 @@
     <item android:id="@+id/action_connect"
         android:title="@string/action_connect"
         android:showAsAction="never" />
+    <item android:id="@+id/action_disconnect"
+        android:title="@string/action_disconnect"
+        android:showAsAction="never" />
+
 </menu>

@@ -71,7 +71,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
             } else {
                 Intent it = new Intent(context, ChatService.class);
                 context.stopService(it);
-                Toast.makeText(context, "Disconnected", Toast.LENGTH_LONG).show();
+                Toast.makeText(context, R.string.msg_disconnected, Toast.LENGTH_LONG).show();
             }
 
         } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
