@@ -44,70 +44,71 @@ public class ChatService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d("NGVL", "onStartCommand");
-        if (!isRunning){
-            Log.d("NGVL", "NOT RUNNING. Starting...");
-            type = intent.getIntExtra(EXTRA_SERVER_CLIENT, TYPE_CLIENT);
-            final String ipAddress = intent.getStringExtra(EXTRA_IP_ADDRESS);
+        if (intent != null) {
+            if (!isRunning) {
+                Log.d("NGVL", "NOT RUNNING. Starting...");
+                type = intent.getIntExtra(EXTRA_SERVER_CLIENT, TYPE_CLIENT);
+                final String ipAddress = intent.getStringExtra(EXTRA_IP_ADDRESS);
 
-            new Thread(){
-                @Override
-                public void run() {
-                    Log.d("NGVL", "init connection thread");
-                    isRunning = true;
-                    try {
-                        if (type == TYPE_SERVER) {
-                            Log.d("NGVL", "start server socket");
-                            ServerSocket serverSocketSocket = new ServerSocket(PORT);
-                            mSocket = serverSocketSocket.accept();
-                            Log.d("NGVL", "client accepted");
-
-                        } else {
-                            Log.d("NGVL", "connecting to server");
-                            mSocket = new Socket();
-                            mSocket.connect(new InetSocketAddress(ipAddress, PORT), 500);
-                            Log.d("NGVL", "connected to server");
-                        }
-                        readStream = mSocket.getInputStream();
-                        writeStream = mSocket.getOutputStream();
-
-                        sendMessageBroadcast(getString(R.string.msg_connected));
-
-                        DataInputStream dis = new DataInputStream(readStream);
-                        while (isRunning){
-                            Log.d("NGVL", "waiting for mMessages...");
-                            String s = dis.readUTF();
-                            Log.d("NGVL", "message received: "+ s);
-                            sendMessageBroadcast(s);
-                        }
-
-                    } catch (Throwable e){
-                        e.printStackTrace();
-                        isRunning = false;
-
-                        disconnect();
-                    }
-                    Log.d("NGVL", "Thread stopped! Disconnected.");
-                }
-            }.start();
-        } else {
-            final String message = intent.getStringExtra(EXTRA_MESSAGE);
-            if (message != null && writeStream != null){
-                new Thread(){
+                new Thread() {
                     @Override
                     public void run() {
-                        super.run();
-                        DataOutputStream dos = new DataOutputStream(writeStream);
+                        Log.d("NGVL", "init connection thread");
+                        isRunning = true;
                         try {
-                            Log.d("NGVL", "sending message: " + message);
-                            dos.writeUTF(message);
-                        } catch (IOException e) {
+                            if (type == TYPE_SERVER) {
+                                Log.d("NGVL", "start server socket");
+                                ServerSocket serverSocketSocket = new ServerSocket(PORT);
+                                mSocket = serverSocketSocket.accept();
+                                Log.d("NGVL", "client accepted");
+
+                            } else {
+                                Log.d("NGVL", "connecting to server");
+                                mSocket = new Socket();
+                                mSocket.connect(new InetSocketAddress(ipAddress, PORT), 500);
+                                Log.d("NGVL", "connected to server");
+                            }
+                            readStream = mSocket.getInputStream();
+                            writeStream = mSocket.getOutputStream();
+
+                            sendMessageBroadcast(getString(R.string.msg_connected));
+
+                            DataInputStream dis = new DataInputStream(readStream);
+                            while (isRunning) {
+                                Log.d("NGVL", "waiting for mMessages...");
+                                String s = dis.readUTF();
+                                Log.d("NGVL", "message received: " + s);
+                                sendMessageBroadcast(s);
+                            }
+
+                        } catch (Throwable e) {
                             e.printStackTrace();
+                            isRunning = false;
+
+                            disconnect();
                         }
+                        Log.d("NGVL", "Thread stopped! Disconnected.");
                     }
                 }.start();
+            } else {
+                final String message = intent.getStringExtra(EXTRA_MESSAGE);
+                if (message != null && writeStream != null) {
+                    new Thread() {
+                        @Override
+                        public void run() {
+                            super.run();
+                            DataOutputStream dos = new DataOutputStream(writeStream);
+                            try {
+                                Log.d("NGVL", "sending message: " + message);
+                                dos.writeUTF(message);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }.start();
+                }
             }
         }
-
         return super.onStartCommand(intent, flags, startId);
     }
 
