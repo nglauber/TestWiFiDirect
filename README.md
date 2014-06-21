@@ -2,11 +2,13 @@ TestWiFiDirect
 ==============
 
 Exemplo simples do uso da API WiFi-Direct do Android.
+Mais detalhes em:
+http://developer.android.com/guide/topics/connectivity/wifip2p.html
 
 Pré-Requisitos
 ==============
 Android Studio 0.6.1
-Dois dispositivos (A e B) rodando Android 4.0 (API Level 14) ou superior com suporte ao recurso de WiFi-Direct.
+Dois dispositivos rodando Android 4.0 (API Level 14) ou superior com suporte ao recurso de WiFi-Direct.
 
 Para checar se o aparelho possui esse recurso, acesse as configurações do aparelho e em seguida selecione Wi-Fi. Na parte inferior (normalmente) haverá uma opção Wi-Fi direct.
 
