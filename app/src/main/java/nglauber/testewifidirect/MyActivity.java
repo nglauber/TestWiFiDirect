@@ -22,7 +22,7 @@ public class MyActivity extends Activity
         implements  WifiP2pManager.PeerListListener,
                     WifiP2pManager.ConnectionInfoListener {
 
-    public static final String TAG = "NGVL";
+    public static final String TAG = MyActivity.class.getSimpleName();
     IntentFilter mIntentFilter;
     WifiP2pManager mManager;
     WifiP2pManager.Channel mChannel;
